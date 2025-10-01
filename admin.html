@@ -185,6 +185,7 @@
 
     <script>
         let allMessages = [];
+        const API_KEY = 'vp_admin_2025_cyber_sanctuary_mgmt';
 
         async function loadMessages() {
             try {
@@ -255,6 +256,7 @@
                     method: 'DELETE',
                     headers: {
                         'Content-Type': 'application/json',
+                        'X-API-Key': API_KEY
                     },
                     body: JSON.stringify({ id: messageId })
                 });
@@ -285,6 +287,7 @@
                     method: 'DELETE',
                     headers: {
                         'Content-Type': 'application/json',
+                        'X-API-Key': API_KEY
                     },
                     body: JSON.stringify({ clear_all: true })
                 });

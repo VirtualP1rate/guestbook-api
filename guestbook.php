@@ -21,6 +21,7 @@ $dataFile = '/var/www/html/data/guestbook.json';
 $maxMessageLength = 200;
 $maxNameLength = 20;
 $rateLimit = 60; // seconds between posts from same IP
+$adminApiKey = 'vp_admin_2025_cyber_sanctuary_mgmt'; // API key for DELETE operations
 
 // Ensure data directory exists
 $dataDir = dirname($dataFile);
@@ -103,6 +104,16 @@ function checkRateLimit($ip) {
     return 0;
 }
 
+function validateAdminApiKey() {
+    global $adminApiKey;
+
+    // Check for API key in headers
+    $headers = getallheaders();
+    $providedKey = $headers['X-API-Key'] ?? $headers['x-api-key'] ?? $_SERVER['HTTP_X_API_KEY'] ?? '';
+
+    return $providedKey === $adminApiKey;
+}
+
 // Handle requests
 try {
     // Handle method parameter for JSONP
@@ -173,7 +184,12 @@ try {
         }
 
     } elseif ($method === 'DELETE') {
-        // Handle DELETE requests for message management
+        // Handle DELETE requests for message management - requires API key
+        if (!validateAdminApiKey()) {
+            http_response_code(401);
+            throw new Exception('Unauthorized: Invalid or missing API key');
+        }
+
         $input = json_decode(file_get_contents('php://input'), true);
         if (!$input) {
             throw new Exception('Invalid JSON input');
