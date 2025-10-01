@@ -1,5 +1,11 @@
 <?php
-header('Content-Type: application/json');
+// JSONP Support
+$isJsonp = isset($_GET['callback']);
+if ($isJsonp) {
+    header('Content-Type: application/javascript');
+} else {
+    header('Content-Type: application/json');
+}
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
@@ -31,27 +37,6 @@ if (!file_exists($dataFile)) {
                 'message' => 'Welcome to my cyber sanctuary. Leave your mark in the digital void...',
                 'timestamp' => '2025-01-01T00:00:00Z',
                 'id' => 'init_001',
-                'ip' => '127.0.0.1'
-            ],
-            [
-                'name' => 'CyberExplorer',
-                'message' => 'Amazing animation! The nodes feel alive. This takes me back to the early days of the web.',
-                'timestamp' => '2025-01-02T14:30:00Z',
-                'id' => 'init_002',
-                'ip' => '127.0.0.1'
-            ],
-            [
-                'name' => 'RetroHacker',
-                'message' => 'Love the Audiowide font choice and the neon aesthetic. Very cyberpunk vibes! 🔥',
-                'timestamp' => '2025-01-03T09:15:00Z',
-                'id' => 'init_003',
-                'ip' => '127.0.0.1'
-            ],
-            [
-                'name' => 'DigitalNomad',
-                'message' => 'The spatial partitioning in your animation is brilliant. Smooth performance even on my old laptop!',
-                'timestamp' => '2025-01-04T16:45:00Z',
-                'id' => 'init_004',
                 'ip' => '127.0.0.1'
             ]
         ]
@@ -120,7 +105,10 @@ function checkRateLimit($ip) {
 
 // Handle requests
 try {
-    if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+    // Handle method parameter for JSONP
+    $method = $_GET['method'] ?? $_SERVER['REQUEST_METHOD'];
+
+    if ($method === 'GET') {
         // Return messages (without IP addresses for privacy)
         $messages = loadMessages();
         $publicMessages = array_map(function($msg) {
@@ -128,18 +116,26 @@ try {
             return $msg;
         }, $messages);
 
-        echo json_encode(['success' => true, 'messages' => $publicMessages]);
+        $response = ['success' => true, 'messages' => $publicMessages];
 
-    } elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        // Add new message
-        $input = json_decode(file_get_contents('php://input'), true);
-
-        if (!$input) {
-            throw new Exception('Invalid JSON input');
+    } elseif ($method === 'POST') {
+        // Handle POST data from JSONP or regular POST
+        if (isset($_GET['name']) && isset($_GET['message'])) {
+            // JSONP POST via URL parameters
+            $name = urldecode($_GET['name']);
+            $message = urldecode($_GET['message']);
+        } else {
+            // Regular POST with JSON body
+            $input = json_decode(file_get_contents('php://input'), true);
+            if (!$input) {
+                throw new Exception('Invalid JSON input');
+            }
+            $name = $input['name'] ?? '';
+            $message = $input['message'] ?? '';
         }
 
-        $name = sanitizeInput($input['name'] ?? '', $maxNameLength);
-        $message = sanitizeInput($input['message'] ?? '', $maxMessageLength);
+        $name = sanitizeInput($name, $maxNameLength);
+        $message = sanitizeInput($message, $maxMessageLength);
 
         if (empty($name) || empty($message)) {
             throw new Exception('Name and message are required');
@@ -171,7 +167,7 @@ try {
         if (saveMessages($messages)) {
             // Return success without IP
             unset($newMessage['ip']);
-            echo json_encode(['success' => true, 'message' => $newMessage]);
+            $response = ['success' => true, 'message' => $newMessage];
         } else {
             throw new Exception('Failed to save message');
         }
@@ -180,8 +176,21 @@ try {
         throw new Exception('Method not allowed');
     }
 
+    // Output response with JSONP wrapper if needed
+    if ($isJsonp) {
+        echo $_GET['callback'] . '(' . json_encode($response) . ');';
+    } else {
+        echo json_encode($response);
+    }
+
 } catch (Exception $e) {
     http_response_code(400);
-    echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+    $errorResponse = ['success' => false, 'error' => $e->getMessage()];
+
+    if ($isJsonp) {
+        echo $_GET['callback'] . '(' . json_encode($errorResponse) . ');';
+    } else {
+        echo json_encode($errorResponse);
+    }
 }
 ?>
