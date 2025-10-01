@@ -26,12 +26,14 @@ COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 # Copy application files
 COPY guestbook.php /var/www/html/
+COPY admin.html /var/www/html/
 
 # Set ownership and permissions
 RUN chown -R nginx:nginx /var/www/html \
     && chmod 755 /var/www/html \
     && chmod 755 /var/www/html/data \
-    && chmod 644 /var/www/html/*.php
+    && chmod 644 /var/www/html/*.php \
+    && chmod 644 /var/www/html/*.html
 
 # Configure PHP-FPM
 RUN sed -i 's/;cgi.fix_pathinfo=1/cgi.fix_pathinfo=0/' /etc/php82/php.ini \

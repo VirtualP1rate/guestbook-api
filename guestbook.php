@@ -7,7 +7,7 @@ if ($isJsonp) {
     header('Content-Type: application/json');
 }
 header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
+header('Access-Control-Allow-Methods: GET, POST, DELETE, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
 
 // Handle preflight OPTIONS request
@@ -170,6 +170,59 @@ try {
             $response = ['success' => true, 'message' => $newMessage];
         } else {
             throw new Exception('Failed to save message');
+        }
+
+    } elseif ($method === 'DELETE') {
+        // Handle DELETE requests for message management
+        $input = json_decode(file_get_contents('php://input'), true);
+        if (!$input) {
+            throw new Exception('Invalid JSON input');
+        }
+
+        if (isset($input['clear_all']) && $input['clear_all'] === true) {
+            // Clear all messages (keep only the initial welcome message)
+            $initialData = [
+                'messages' => [
+                    [
+                        'name' => 'VirtualPirate',
+                        'message' => 'Welcome to my cyber sanctuary. Leave your mark in the digital void...',
+                        'timestamp' => '2025-01-01T00:00:00Z',
+                        'id' => 'init_001',
+                        'ip' => '127.0.0.1'
+                    ]
+                ]
+            ];
+
+            if (file_put_contents($dataFile, json_encode($initialData, JSON_PRETTY_PRINT))) {
+                $response = ['success' => true, 'message' => 'All messages cleared'];
+            } else {
+                throw new Exception('Failed to clear messages');
+            }
+        } elseif (isset($input['id'])) {
+            // Delete specific message by ID
+            $messageId = $input['id'];
+            $messages = loadMessages();
+            $originalCount = count($messages);
+
+            // Filter out the message with the specified ID
+            $messages = array_filter($messages, function($msg) use ($messageId) {
+                return $msg['id'] !== $messageId;
+            });
+
+            // Re-index array to maintain proper JSON structure
+            $messages = array_values($messages);
+
+            if (count($messages) < $originalCount) {
+                if (saveMessages($messages)) {
+                    $response = ['success' => true, 'message' => 'Message deleted successfully'];
+                } else {
+                    throw new Exception('Failed to save changes');
+                }
+            } else {
+                throw new Exception('Message not found');
+            }
+        } else {
+            throw new Exception('Invalid delete request - missing id or clear_all parameter');
         }
 
     } else {
