@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  virtualpirate-1504:
+    build: .
+    container_name: virtualpirate-1504
+    ports:
+      - "8080:80"
+    volumes:
+      # Mount data directory for persistence
+      - ./data:/var/www/html/data
+      # Mount static files for development (comment out for production)
+      - ./index.html:/var/www/html/index.html:ro
+      - ./style.css:/var/www/html/style.css:ro
+      - ./vector-animation.js:/var/www/html/vector-animation.js:ro
+      - ./neocities.png:/var/www/html/neocities.png:ro
+      - ./robots.txt:/var/www/html/robots.txt:ro
+      - ./not_found.html:/var/www/html/not_found.html:ro
+    environment:
+      - PHP_MEMORY_LIMIT=128M
+      - PHP_MAX_EXECUTION_TIME=30
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/guestbook.php"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  default:
+    name: virtualpirate-network

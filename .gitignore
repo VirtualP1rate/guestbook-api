@@ -1,0 +1,61 @@
+# Data Directory (persistent storage)
+data/
+*.json
+
+# Exclude CLAUDE.md for repository documentation
+CLAUDE.md
+
+# Development Files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS Generated Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Windows Zone Identifier Files
+*.Zone.Identifier
+
+# Docker Development
+*.log
+
+# Temporary Files
+tmp/
+temp/
+*.tmp
+
+# Environment Files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Cache Directories
+.cache/
+.parcel-cache/
+
+# Editor Backup Files
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*
+
+# Vim
+[._]*.s[a-v][a-z]
+[._]*.sw[a-p]
+[._]s[a-rt-v][a-z]
+[._]ss[a-gi-z]
+[._]sw[a-p]
