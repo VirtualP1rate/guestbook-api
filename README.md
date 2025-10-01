@@ -18,8 +18,8 @@ A cyberpunk-themed guest book API with persistent storage, rate limiting, and CO
 
 ```bash
 # Clone and build
-git clone <your-repo>
-cd docker-1504
+git clone https://github.com/VirtualP1rate/guestbook-api.git
+cd guestbook-api
 
 # No additional files needed - API only
 
@@ -37,14 +37,14 @@ curl http://localhost:8080/guestbook.php
 
 ```bash
 # Pull the image from GitHub Container Registry
-docker pull ghcr.io/yourusername/virtualpirate-1504:latest
+docker pull ghcr.io/virtualp1rate/guestbook-api:latest
 
 # Run with Docker
 docker run -d \
-  --name virtualpirate-1504 \
+  --name guestbook-api \
   -p 80:80 \
   -v $(pwd)/data:/var/www/html/data \
-  ghcr.io/yourusername/virtualpirate-1504:latest
+  ghcr.io/virtualp1rate/guestbook-api:latest
 
 # Or use with your existing nginx proxy manager
 # Point your domain to this container on port 80
@@ -97,7 +97,7 @@ Adds a new guest book message.
 ## File Structure
 
 ```
-docker-1504/
+guestbook-api/
 ├── Dockerfile              # Container definition
 ├── docker-compose.yml     # Local development setup
 ├── nginx.conf             # Nginx configuration
@@ -144,7 +144,7 @@ The container includes built-in health checks that verify the API is responding 
 ### Check container status
 ```bash
 docker ps
-docker logs virtualpirate-1504
+docker logs guestbook-api
 ```
 
 ### Check API health
@@ -154,11 +154,11 @@ curl -I http://localhost:8080/guestbook.php
 
 ### View guest book data
 ```bash
-docker exec virtualpirate-1504 cat /var/www/html/data/guestbook.json
+docker exec guestbook-api cat /var/www/html/data/guestbook.json
 ```
 
 ### Reset guest book data
 ```bash
-docker exec virtualpirate-1504 rm /var/www/html/data/guestbook.json
-docker restart virtualpirate-1504
+docker exec guestbook-api rm /var/www/html/data/guestbook.json
+docker restart guestbook-api
 ```
