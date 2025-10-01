@@ -184,12 +184,15 @@ try {
     }
 
 } catch (Exception $e) {
-    http_response_code(400);
     $errorResponse = ['success' => false, 'error' => $e->getMessage()];
 
     if ($isJsonp) {
+        // For JSONP, always return 200 status so script loads successfully
+        http_response_code(200);
         echo $_GET['callback'] . '(' . json_encode($errorResponse) . ');';
     } else {
+        // For regular requests, return 400 status
+        http_response_code(400);
         echo json_encode($errorResponse);
     }
 }
